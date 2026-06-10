@@ -262,8 +262,11 @@
       }
 
       function readable(s) {
-        // 朗读时取 “/” 前的第一种说法，更自然
-        return s.split("/")[0].trim();
+        // “/” 分隔的是同义说法，朗读时全部读出，用 or 连接
+        return s.split("/")
+          .map(p => p.trim().replace(/[.。]+$/, ""))
+          .filter(Boolean)
+          .join(". Or, ");
       }
 
       function current() { return pool[order[pos]]; }
