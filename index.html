@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1f6feb" />
+  <title>加州路考英语练习 · CA Road Test</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --card2: #1c2330;
+      --accent: #1f6feb;
+      --accent2: #2ea043;
+      --text: #e6edf3;
+      --muted: #9da7b3;
+      --line: #2d333b;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    body { display: flex; flex-direction: column; }
+    header {
+      padding: 14px 16px 10px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+    header h1 { margin: 0; font-size: 18px; font-weight: 700; }
+    header .sub { margin-top: 3px; font-size: 12px; color: var(--muted); }
+
+    .toolbar {
+      display: flex; gap: 8px; align-items: center;
+      padding: 10px 14px; flex-wrap: wrap; justify-content: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .toolbar select, .toolbar button.chip {
+      background: var(--card2); color: var(--text);
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 12px; font-size: 13px; cursor: pointer;
+    }
+    .toolbar .chip.active { background: var(--accent); border-color: var(--accent); }
+
+    main {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 16px; gap: 14px; justify-content: flex-start;
+    }
+    .progress { text-align: center; font-size: 13px; color: var(--muted); }
+    .progress .cat {
+      display: inline-block; background: var(--card2);
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 2px 10px; margin-bottom: 6px; color: var(--accent);
+      font-size: 12px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px 18px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.35);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .en {
+      font-size: 23px; line-height: 1.4; font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .divider { height: 1px; background: var(--line); }
+    .zh { font-size: 19px; line-height: 1.5; color: #f0f3f6; }
+    .note {
+      font-size: 14px; line-height: 1.6; color: var(--muted);
+      background: var(--card2); border-radius: 12px; padding: 12px 14px;
+    }
+    .note b { color: var(--accent2); }
+
+    .speakbtn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, var(--accent), #3b82f6);
+      color: #fff; border: none; border-radius: 14px;
+      padding: 16px; font-size: 17px; font-weight: 700; cursor: pointer;
+      width: 100%;
+    }
+    .speakbtn:active { transform: scale(.985); }
+    .speakbtn.speaking { background: linear-gradient(135deg, #2ea043, #3fb950); }
+
+    .controls { display: flex; gap: 12px; }
+    .controls button {
+      flex: 1; border: 1px solid var(--line); background: var(--card2);
+      color: var(--text); border-radius: 14px; padding: 15px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .controls button.next {
+      background: var(--accent2); border-color: var(--accent2); color: #fff;
+    }
+    .controls button:active { transform: scale(.985); }
+
+    .options { display: flex; gap: 14px; align-items: center; justify-content: center;
+      font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+    .options label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .speedbtns { display: flex; gap: 6px; }
+    .speedbtns button {
+      background: var(--card2); border: 1px solid var(--line); color: var(--muted);
+      border-radius: 999px; padding: 4px 11px; font-size: 12px; cursor: pointer;
+    }
+    .speedbtns button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    footer { text-align: center; font-size: 11px; color: var(--muted); padding: 10px; }
+    .warn { color: #f0a020; font-size: 12px; text-align: center; padding: 0 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🚗 加州路考英语练习</h1>
+    <div class="sub">California DMV Road Test — 考官常用指令 · 听 · 说 · 背</div>
+  </header>
+
+  <div class="toolbar">
+    <select id="catSelect" aria-label="选择分类"></select>
+    <button class="chip" id="shuffleBtn">🔀 随机</button>
+    <button class="chip" id="autoBtn">🔊 自动播放</button>
+  </div>
+
+  <main>
+    <div class="progress">
+      <div class="cat" id="cardCat">—</div>
+      <div id="counter">0 / 0</div>
+    </div>
+
+    <div class="card">
+      <div class="en" id="enText">点击下方按钮开始</div>
+      <div class="divider"></div>
+      <div class="zh" id="zhText"></div>
+      <div class="note" id="noteText"></div>
+    </div>
+
+    <button class="speakbtn" id="speakBtn">🔊 重复播放 (Replay)</button>
+
+    <div class="speedbtns" style="justify-content:center">
+      <span style="color:var(--muted);font-size:12px;align-self:center">语速：</span>
+      <button data-rate="0.7">慢</button>
+      <button data-rate="0.85" class="active">正常</button>
+      <button data-rate="1">快</button>
+    </div>
+
+    <div class="controls">
+      <button id="prevBtn">⬅️ 上一题</button>
+      <button class="next" id="nextBtn">下一题 ➡️</button>
+    </div>
+
+    <div class="warn" id="ttsWarn"></div>
+  </main>
+
+  <footer>
+    题库基于加州 DMV 路考常见指令整理 · 仅供英语练习参考<br>
+    Web Speech API · 建议使用 Safari / Chrome
+  </footer>
+
+  <script src="questions.js"></script>
+  <script>
+    (function () {
+      // ---------- 状态 ----------
+      let pool = QUESTIONS.slice();      // 当前题池
+      let order = [];                    // 题目顺序索引
+      let pos = 0;                       // 当前位置
+      let shuffle = false;
+      let autoplay = true;
+      let rate = 0.85;
+      let currentCat = "全部";
+
+      const el = (id) => document.getElementById(id);
+      const enText = el("enText"), zhText = el("zhText"), noteText = el("noteText");
+      const counter = el("counter"), cardCat = el("cardCat");
+      const speakBtn = el("speakBtn"), ttsWarn = el("ttsWarn");
+
+      // ---------- TTS ----------
+      const synth = window.speechSynthesis;
+      let enVoice = null;
+      function pickVoice() {
+        if (!synth) return;
+        const voices = synth.getVoices();
+        enVoice =
+          voices.find(v => /en-US/i.test(v.lang) && /samantha|google|female/i.test(v.name)) ||
+          voices.find(v => /en-US/i.test(v.lang)) ||
+          voices.find(v => /^en/i.test(v.lang)) || null;
+      }
+      if (synth) {
+        pickVoice();
+        synth.onvoiceschanged = pickVoice;
+      } else {
+        ttsWarn.textContent = "⚠️ 当前浏览器不支持语音播放，建议换用 Safari 或 Chrome。";
+      }
+
+      function speak(text) {
+        if (!synth) return;
+        synth.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-US";
+        u.rate = rate;
+        u.pitch = 1;
+        if (enVoice) u.voice = enVoice;
+        u.onstart = () => speakBtn.classList.add("speaking");
+        u.onend = () => speakBtn.classList.remove("speaking");
+        u.onerror = () => speakBtn.classList.remove("speaking");
+        synth.speak(u);
+      }
+
+      // ---------- 题池构建 ----------
+      function buildOrder() {
+        order = pool.map((_, i) => i);
+        if (shuffle) {
+          for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+          }
+        }
+        pos = 0;
+      }
+
+      function applyCategory() {
+        if (currentCat === "全部") pool = QUESTIONS.slice();
+        else pool = QUESTIONS.filter(q => q.cat === currentCat);
+        buildOrder();
+        render(false);
+      }
+
+      // ---------- 渲染 ----------
+      function render(doSpeak) {
+        if (!pool.length) return;
+        const q = pool[order[pos]];
+        // 英文里有 “/” 的两种说法，朗读时只读第一种，显示时全显示
+        enText.textContent = q.en;
+        zhText.textContent = q.zh;
+        noteText.innerHTML = "💡 " + q.note;
+        cardCat.textContent = q.cat;
+        counter.textContent = (pos + 1) + " / " + pool.length;
+        if (doSpeak && autoplay) speak(readable(q.en));
+      }
+
+      function readable(s) {
+        // 朗读时取 “/” 前的第一种说法，更自然
+        return s.split("/")[0].trim();
+      }
+
+      function current() { return pool[order[pos]]; }
+
+      // ---------- 事件 ----------
+      speakBtn.addEventListener("click", () => speak(readable(current().en)));
+      el("nextBtn").addEventListener("click", () => {
+        pos = (pos + 1) % pool.length;
+        render(true);
+      });
+      el("prevBtn").addEventListener("click", () => {
+        pos = (pos - 1 + pool.length) % pool.length;
+        render(true);
+      });
+
+      el("shuffleBtn").addEventListener("click", (e) => {
+        shuffle = !shuffle;
+        e.target.classList.toggle("active", shuffle);
+        buildOrder();
+        render(false);
+      });
+
+      el("autoBtn").addEventListener("click", (e) => {
+        autoplay = !autoplay;
+        e.target.classList.toggle("active", autoplay);
+      });
+      el("autoBtn").classList.add("active"); // 默认开
+
+      document.querySelectorAll(".speedbtns button[data-rate]").forEach(b => {
+        b.addEventListener("click", () => {
+          rate = parseFloat(b.dataset.rate);
+          document.querySelectorAll(".speedbtns button[data-rate]")
+            .forEach(x => x.classList.remove("active"));
+          b.classList.add("active");
+        });
+      });
+
+      // 分类下拉
+      const catSelect = el("catSelect");
+      const cats = ["全部", ...Array.from(new Set(QUESTIONS.map(q => q.cat)))];
+      cats.forEach(c => {
+        const o = document.createElement("option");
+        o.value = c; o.textContent = c === "全部" ? "全部分类" : c;
+        catSelect.appendChild(o);
+      });
+      catSelect.addEventListener("change", () => {
+        currentCat = catSelect.value;
+        applyCategory();
+      });
+
+      // ---------- 初始化 ----------
+      buildOrder();
+      render(false); // 首次不自动播放（手机需用户手势才能发声）
+    })();
+  </script>
+</body>
+</html>
