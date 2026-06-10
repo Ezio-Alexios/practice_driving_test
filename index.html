@@ -89,7 +89,9 @@
       text-align: center;
     }
     .card.hidden-zh .answer { display: none; }
-    .card.hidden-zh .revealbtn { display: block; }
+    .card.hidden-zh #revealBtn { display: block; }
+    .card.hidden-en .en { display: none; }
+    .card.hidden-en #revealEnBtn { display: block; }
 
     .speakbtn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -137,6 +139,7 @@
     <button class="chip" id="shuffleBtn">🔀 随机</button>
     <button class="chip" id="autoBtn">🔊 自动播放</button>
     <button class="chip" id="hideBtn">🙈 隐藏中文</button>
+    <button class="chip" id="hideEnBtn">🙉 隐藏英文</button>
   </div>
 
   <main>
@@ -146,6 +149,7 @@
     </div>
 
     <div class="card" id="card">
+      <button class="revealbtn" id="revealEnBtn">👂 点击显示英文原文</button>
       <div class="en" id="enText">点击下方按钮开始</div>
       <div class="divider"></div>
       <button class="revealbtn" id="revealBtn">👀 点击显示中文答案</button>
@@ -187,6 +191,7 @@
       let shuffle = false;
       let autoplay = true;
       let hideZh = false;               // 隐藏中文（先听后看答案）
+      let hideEn = false;               // 隐藏英文（纯听力模式，模拟真实考试）
       let rate = 0.85;
       let currentCat = "全部";
 
@@ -194,7 +199,7 @@
       const enText = el("enText"), zhText = el("zhText"), noteText = el("noteText");
       const counter = el("counter"), cardCat = el("cardCat");
       const speakBtn = el("speakBtn"), ttsWarn = el("ttsWarn");
-      const card = el("card"), revealBtn = el("revealBtn");
+      const card = el("card"), revealBtn = el("revealBtn"), revealEnBtn = el("revealEnBtn");
 
       // ---------- TTS ----------
       const synth = window.speechSynthesis;
@@ -258,6 +263,7 @@
         cardCat.textContent = q.cat;
         counter.textContent = (pos + 1) + " / " + pool.length;
         card.classList.toggle("hidden-zh", hideZh); // 每换一题重新隐藏
+        card.classList.toggle("hidden-en", hideEn);
         if (doSpeak && autoplay) speak(readable(q.en));
       }
 
@@ -302,6 +308,15 @@
       });
       revealBtn.addEventListener("click", () => {
         card.classList.remove("hidden-zh"); // 只显示当前这题的答案
+      });
+
+      el("hideEnBtn").addEventListener("click", (e) => {
+        hideEn = !hideEn;
+        e.target.classList.toggle("active", hideEn);
+        card.classList.toggle("hidden-en", hideEn);
+      });
+      revealEnBtn.addEventListener("click", () => {
+        card.classList.remove("hidden-en"); // 只显示当前这题的英文
       });
 
       document.querySelectorAll(".speedbtns button[data-rate]").forEach(b => {
