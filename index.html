@@ -103,6 +103,23 @@
     .speakbtn:active { transform: scale(.985); }
     .speakbtn.speaking { background: linear-gradient(135deg, #2ea043, #3fb950); }
 
+    .replybtn {
+      display: none; align-items: center; justify-content: center; gap: 10px;
+      background: var(--card2); color: var(--accent2);
+      border: 1px solid var(--accent2); border-radius: 14px;
+      padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer;
+      width: 100%;
+    }
+    .replybtn.show { display: flex; }
+    .replybtn:active { transform: scale(.985); }
+    .replybtn.speaking { background: var(--accent2); color: #fff; }
+    .reply-text {
+      font-size: 15px; line-height: 1.5; color: var(--accent2);
+      background: rgba(46,160,67,.10); border: 1px solid rgba(46,160,67,.35);
+      border-radius: 12px; padding: 12px 14px;
+    }
+    .reply-text:empty { display: none; }
+
     .controls { display: flex; gap: 12px; }
     .controls button {
       flex: 1; border: 1px solid var(--line); background: var(--card2);
@@ -156,10 +173,12 @@
       <div class="answer">
         <div class="zh" id="zhText"></div>
         <div class="note" id="noteText"></div>
+        <div class="reply-text" id="replyText"></div>
       </div>
     </div>
 
-    <button class="speakbtn" id="speakBtn">🔊 重复播放 (Replay)</button>
+    <button class="speakbtn" id="speakBtn">🔊 重复播放问题 (Replay)</button>
+    <button class="replybtn" id="replyBtn">🗣️ 播放回答 (Reply)</button>
 
     <div class="speedbtns" style="justify-content:center">
       <span style="color:var(--muted);font-size:12px;align-self:center">语速：</span>
@@ -199,6 +218,7 @@
       const enText = el("enText"), zhText = el("zhText"), noteText = el("noteText");
       const counter = el("counter"), cardCat = el("cardCat");
       const speakBtn = el("speakBtn"), ttsWarn = el("ttsWarn");
+      const replyBtn = el("replyBtn"), replyText = el("replyText");
       const card = el("card"), revealBtn = el("revealBtn"), revealEnBtn = el("revealEnBtn");
 
       // ---------- TTS ----------
@@ -219,17 +239,19 @@
         ttsWarn.textContent = "⚠️ 当前浏览器不支持语音播放，建议换用 Safari 或 Chrome。";
       }
 
-      function speak(text) {
+      function speak(text, btn) {
         if (!synth) return;
+        btn = btn || speakBtn;
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "en-US";
         u.rate = rate;
         u.pitch = 1;
         if (enVoice) u.voice = enVoice;
-        u.onstart = () => speakBtn.classList.add("speaking");
-        u.onend = () => speakBtn.classList.remove("speaking");
-        u.onerror = () => speakBtn.classList.remove("speaking");
+        const clear = () => { speakBtn.classList.remove("speaking"); replyBtn.classList.remove("speaking"); };
+        u.onstart = () => { clear(); btn.classList.add("speaking"); };
+        u.onend = clear;
+        u.onerror = clear;
         synth.speak(u);
       }
 
@@ -264,6 +286,13 @@
         counter.textContent = (pos + 1) + " / " + pool.length;
         card.classList.toggle("hidden-zh", hideZh); // 每换一题重新隐藏
         card.classList.toggle("hidden-en", hideEn);
+        if (q.reply) {
+          replyText.textContent = "🗣️ 你可以这样回答：" + q.reply;
+          replyBtn.classList.add("show");
+        } else {
+          replyText.textContent = "";
+          replyBtn.classList.remove("show");
+        }
         if (doSpeak && autoplay) speak(readable(q.en));
       }
 
@@ -278,7 +307,11 @@
       function current() { return pool[order[pos]]; }
 
       // ---------- 事件 ----------
-      speakBtn.addEventListener("click", () => speak(readable(current().en)));
+      speakBtn.addEventListener("click", () => speak(readable(current().en), speakBtn));
+      replyBtn.addEventListener("click", () => {
+        const r = current().reply;
+        if (r) speak(r, replyBtn);
+      });
       el("nextBtn").addEventListener("click", () => {
         pos = (pos + 1) % pool.length;
         render(true);

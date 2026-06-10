@@ -9,12 +9,14 @@ const QUESTIONS = [
     en: "Good morning. Do you have your license and registration?",
     zh: "早上好。你带了驾照和行驶证（注册证）吗？",
     note: "考试开始时，考官会先核对你的证件。回答 “Yes, here you go.”（在这，给你）。",
+    reply: "Yes, here you go.",
   },
   {
     cat: "开始",
     en: "May I see your driver's license, please?",
     zh: "请出示你的驾照，可以吗？",
     note: "考官要看你的临时驾照/学习驾照。把证件递给他。",
+    reply: "Sure, here it is.",
   },
   {
     cat: "开始",
@@ -27,12 +29,14 @@ const QUESTIONS = [
     en: "Is this your vehicle?",
     zh: "这是你的车吗？",
     note: "确认考试用车。回答 Yes 或 No, it's my friend's car.（不，是我朋友的车）。",
+    reply: "Yes, it is.",
   },
   {
     cat: "开始",
     en: "Are you ready to begin?",
     zh: "你准备好开始了吗？",
     note: "确认你是否准备好。回答 “Yes, I'm ready.”",
+    reply: "Yes, I'm ready. Thank you.",
   },
   {
     cat: "开始",
