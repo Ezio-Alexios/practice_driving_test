@@ -111,6 +111,8 @@
       width: 100%;
     }
     .replybtn.show { display: flex; }
+    /* 回答按钮只在中文提示显示时出现（隐藏中文时一并隐藏） */
+    .card.hidden-zh ~ .replybtn.show { display: none; }
     .replybtn:active { transform: scale(.985); }
     .replybtn.speaking { background: var(--accent2); color: #fff; }
     .reply-text {
