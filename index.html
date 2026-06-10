@@ -80,6 +80,17 @@
     }
     .note b { color: var(--accent2); }
 
+    .answer { display: flex; flex-direction: column; gap: 16px; }
+    .revealbtn {
+      display: none;
+      background: var(--card2); color: var(--accent);
+      border: 1px dashed var(--accent); border-radius: 12px;
+      padding: 18px; font-size: 16px; font-weight: 600; cursor: pointer;
+      text-align: center;
+    }
+    .card.hidden-zh .answer { display: none; }
+    .card.hidden-zh .revealbtn { display: block; }
+
     .speakbtn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
       background: linear-gradient(135deg, var(--accent), #3b82f6);
@@ -125,6 +136,7 @@
     <select id="catSelect" aria-label="选择分类"></select>
     <button class="chip" id="shuffleBtn">🔀 随机</button>
     <button class="chip" id="autoBtn">🔊 自动播放</button>
+    <button class="chip" id="hideBtn">🙈 隐藏中文</button>
   </div>
 
   <main>
@@ -133,11 +145,14 @@
       <div id="counter">0 / 0</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="card">
       <div class="en" id="enText">点击下方按钮开始</div>
       <div class="divider"></div>
-      <div class="zh" id="zhText"></div>
-      <div class="note" id="noteText"></div>
+      <button class="revealbtn" id="revealBtn">👀 点击显示中文答案</button>
+      <div class="answer">
+        <div class="zh" id="zhText"></div>
+        <div class="note" id="noteText"></div>
+      </div>
     </div>
 
     <button class="speakbtn" id="speakBtn">🔊 重复播放 (Replay)</button>
@@ -171,6 +186,7 @@
       let pos = 0;                       // 当前位置
       let shuffle = false;
       let autoplay = true;
+      let hideZh = false;               // 隐藏中文（先听后看答案）
       let rate = 0.85;
       let currentCat = "全部";
 
@@ -178,6 +194,7 @@
       const enText = el("enText"), zhText = el("zhText"), noteText = el("noteText");
       const counter = el("counter"), cardCat = el("cardCat");
       const speakBtn = el("speakBtn"), ttsWarn = el("ttsWarn");
+      const card = el("card"), revealBtn = el("revealBtn");
 
       // ---------- TTS ----------
       const synth = window.speechSynthesis;
@@ -240,6 +257,7 @@
         noteText.innerHTML = "💡 " + q.note;
         cardCat.textContent = q.cat;
         counter.textContent = (pos + 1) + " / " + pool.length;
+        card.classList.toggle("hidden-zh", hideZh); // 每换一题重新隐藏
         if (doSpeak && autoplay) speak(readable(q.en));
       }
 
@@ -273,6 +291,15 @@
         e.target.classList.toggle("active", autoplay);
       });
       el("autoBtn").classList.add("active"); // 默认开
+
+      el("hideBtn").addEventListener("click", (e) => {
+        hideZh = !hideZh;
+        e.target.classList.toggle("active", hideZh);
+        card.classList.toggle("hidden-zh", hideZh);
+      });
+      revealBtn.addEventListener("click", () => {
+        card.classList.remove("hidden-zh"); // 只显示当前这题的答案
+      });
 
       document.querySelectorAll(".speedbtns button[data-rate]").forEach(b => {
         b.addEventListener("click", () => {
