@@ -154,6 +154,7 @@
   </header>
 
   <div class="toolbar">
+    <select id="setSelect" aria-label="选择题库"></select>
     <select id="catSelect" aria-label="选择分类"></select>
     <button class="chip" id="shuffleBtn">🔀 随机</button>
     <button class="chip" id="autoBtn">🔊 自动播放</button>
@@ -206,7 +207,8 @@
   <script>
     (function () {
       // ---------- 状态 ----------
-      let pool = QUESTIONS.slice();      // 当前题池
+      let activeSet = QUESTION_SETS[0];  // 当前题库（按日期分套）
+      let pool = activeSet.questions.slice(); // 当前题池
       let order = [];                    // 题目顺序索引
       let pos = 0;                       // 当前位置
       let shuffle = false;
@@ -270,8 +272,9 @@
       }
 
       function applyCategory() {
-        if (currentCat === "全部") pool = QUESTIONS.slice();
-        else pool = QUESTIONS.filter(q => q.cat === currentCat);
+        const qs = activeSet.questions;
+        if (currentCat === "全部") pool = qs.slice();
+        else pool = qs.filter(q => q.cat === currentCat);
         buildOrder();
         render(false);
       }
@@ -363,18 +366,37 @@
         });
       });
 
-      // 分类下拉
-      const catSelect = el("catSelect");
-      const cats = ["全部", ...Array.from(new Set(QUESTIONS.map(q => q.cat)))];
-      cats.forEach(c => {
+      // 题库下拉（按日期分套）
+      const setSelect = el("setSelect");
+      QUESTION_SETS.forEach((s, i) => {
         const o = document.createElement("option");
-        o.value = c; o.textContent = c === "全部" ? "全部分类" : c;
-        catSelect.appendChild(o);
+        o.value = String(i); o.textContent = s.name;
+        setSelect.appendChild(o);
       });
+      setSelect.addEventListener("change", () => {
+        activeSet = QUESTION_SETS[parseInt(setSelect.value, 10)] || QUESTION_SETS[0];
+        currentCat = "全部";
+        buildCatOptions();
+        applyCategory();
+      });
+
+      // 分类下拉（随题库刷新）
+      const catSelect = el("catSelect");
+      function buildCatOptions() {
+        catSelect.innerHTML = "";
+        const cats = ["全部", ...Array.from(new Set(activeSet.questions.map(q => q.cat)))];
+        cats.forEach(c => {
+          const o = document.createElement("option");
+          o.value = c; o.textContent = c === "全部" ? "全部分类" : c;
+          catSelect.appendChild(o);
+        });
+        catSelect.value = currentCat;
+      }
       catSelect.addEventListener("change", () => {
         currentCat = catSelect.value;
         applyCategory();
       });
+      buildCatOptions();
 
       // ---------- 初始化 ----------
       buildOrder();
